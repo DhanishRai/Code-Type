@@ -1,74 +1,41 @@
-# ⌨️ Code Type
+# Code Type
 
-**Type real code. Not random words.**
+Code Type is a typing practice app for people who write code. Instead of typing ordinary sentences, you practice with code snippets in Python, JavaScript, C, C++, and Java.
 
-Code Type is a MonkeyType/Keybr-style typing practice platform — but instead of typing plain English words, you type **real, working code** in Python, JavaScript, C, C++, and Java. It's built for developers, students, and anyone who wants their typing speed to actually translate into faster, more accurate coding.
+Choose a language, difficulty, and practice mode. The app shows your typing speed and accuracy while you type. It can run without the backend; starting the backend adds shared snippets and a global leaderboard.
 
-The interface is fully themeable (9 built-in "ultra" visual themes with animated glowing backgrounds and a drifting particle field of code glyphs), highly customizable (fonts, cursor styles, sounds, line numbers, and more), and works completely standalone in the browser — or connected to its own backend for persistent history and a global leaderboard.
+## Features
 
----
+- Practice with five programming languages and five difficulty levels.
+- Choose Single Snippet, Timed (60 seconds), or Marathon (three snippets) mode.
+- See your words per minute (WPM), accuracy, elapsed time, and errors.
+- View your personal statistics and recent test history.
+- Choose from nine themes and customize the typing display.
+- Save settings and personal history in your browser.
+- Use the optional backend to save scores and view a global leaderboard.
+- Keep practicing if the backend is unavailable; the app has a local collection of snippets.
 
-## ✨ Features
+## Technology stack
 
-- **Real code, not gibberish** — every snippet is valid, runnable code covering common patterns: loops, functions, classes, recursion, data structures, decorators, regex, generics, async/await, templates, and more.
-- **5 languages** — Python 🐍, JavaScript 🟨, C 🔧, C++ ➕, Java ☕.
-- **Adjustable difficulty slider (1–5)** — as difficulty rises, snippets get longer and denser with special characters: more brackets, operators, decorators, generics, lambdas, regex, and nested logic. Difficulty 1 ("Novice") is beginner-friendly; Difficulty 5 ("Hacker") throws real production-grade complexity at you.
-- **3 practice modes**
-  - 📄 **Single Snippet** — one snippet, start to finish.
-  - ⏱️ **Timed (60s)** — type as much code as you can in 60 seconds.
-  - 🏃 **Marathon** — three snippets back-to-back.
-- **Live stats** — WPM, raw WPM, accuracy, elapsed time, and error count update in real time as you type.
-- **Post-test results screen** with a WPM-over-time graph, and the option to save your score to the leaderboard.
-- **9 wild built-in themes** — Cyberpunk, Synthwave, Matrix, Dracula, Sunset, Ocean, Galaxy, Lava, and a calmer Daylight mode. Each theme re-skins the entire UI: gradients, glows, particle colors, and syntax feedback colors.
-- **Deep customization** — font family & size, cursor style (block / line / underline), smooth caret animation, blinking cursor, toggleable line numbers, toggleable syntax coloring, toggleable background particles, screen-shake on error, and optional keystroke/error sounds (generated live with the Web Audio API — no audio files needed).
-- **Smart indentation** — press `Tab` to auto-fill a run of indentation spaces at once, just like a real code editor.
-- **Local-first & resilient** — all settings and test history are saved to `localStorage`. If the backend isn't running, the app automatically falls back to a bundled local snippet bank so it's *always* fully functional.
-- **Personal stats dashboard** — best WPM, average WPM, average accuracy, and your last 30 tests.
-- **Global leaderboard** (when connected to the backend) — filterable by language and difficulty.
-- **Fully responsive** — works on desktop and mobile.
+| Part | Technologies | Purpose |
+|---|---|---|
+| Frontend | HTML, CSS, JavaScript | The web page, design, typing practice, and browser storage |
+| Backend | Node.js, Express.js | Provides the API for snippets, scores, and the leaderboard |
+| Data storage | JSON files and browser `localStorage` | The backend saves scores in a JSON file; the browser saves personal settings and history |
+| Other backend package | CORS | Allows the frontend to make requests to the backend during local development |
 
----
+The frontend does not need a build step or frontend packages. The backend uses Express and CORS; Nodemon is available for development.
 
-## 📁 Project Structure
+## Requirements
 
-```
-Code Type/
-├── frontend/                  # Static frontend — no build step required
-│   ├── index.html
-│   ├── css/
-│   │   ├── style.css          # Layout, components, animations
-│   │   └── themes.css         # All 9 theme color palettes (CSS variables)
-│   └── js/
-│       ├── app.js             # Core app logic: typing engine, stats, settings, API calls
-│       ├── particles.js       # Animated canvas particle background
-│       └── snippets.js        # Local fallback snippet bank (offline mode)
-│
-├── backend/                   # Express.js REST API
-│   ├── server.js              # App entry point
-│   ├── package.json
-│   ├── routes/
-│   │   ├── snippets.js
-│   │   └── results.js
-│   ├── controllers/
-│   │   ├── snippetController.js
-│   │   └── resultController.js
-│   └── data/
-│       ├── python.js          # Snippet bank, difficulty 1–5
-│       ├── javascript.js
-│       ├── c.js
-│       ├── cpp.js
-│       ├── java.js
-│       ├── index.js           # Aggregates all languages
-│       └── results.json       # Auto-created — stores saved test results
-│
-└── README.md
-```
+- A modern web browser
+- Node.js 16 or later and npm (only needed to run the backend)
 
----
+## Run the app
 
-## 🚀 Getting Started
+### 1. Start the backend (optional)
 
-### 1. Run the backend (optional, but enables the leaderboard + shared snippet bank)
+Open a terminal in the project folder and run:
 
 ```bash
 cd backend
@@ -76,77 +43,68 @@ npm install
 npm start
 ```
 
-The API will start at **http://localhost:5000**. You should see:
+The API runs at `http://localhost:5000`. Keep this terminal open while using the backend features.
 
-```
-🚀 Code Type API server running at http://localhost:5000
-```
+To restart the backend automatically when you change its code, run `npm run dev` instead of `npm start`.
 
 ### 2. Open the frontend
 
-The frontend is plain HTML/CSS/JS — no build step, no bundler. Just open it:
+In another terminal, from the project folder, run:
 
 ```bash
 cd frontend
-# Easiest: open index.html directly in your browser, OR serve it locally:
 npx serve .
-# or
-python3 -m http.server 8080
 ```
 
-Then visit the printed URL (e.g. `http://localhost:8080` or `http://localhost:3000`).
+Open the local address printed in the terminal. You can also use another static file server or open `frontend/index.html` directly in a browser.
 
-> **Note:** The frontend works fine even if you skip step 1 — it automatically detects that the backend is unreachable and switches to its bundled offline snippet bank. You'll just miss out on the global leaderboard and won't be able to persist scores server-side.
+The app works without starting the backend. Without it, snippets come from the browser's bundled collection, and global score saving and the leaderboard are unavailable. Your personal settings and history remain stored in your browser.
 
-### 3. Point the frontend at your backend (if needed)
+If your backend uses a different address, open **Settings** in the app and change **Backend URL**.
 
-If your backend isn't running on `http://localhost:5000`, open the **Settings** tab in the app and update the **Backend URL** field, then click **Save Settings**.
+## How to practice
 
----
+1. Select a programming language and difficulty.
+2. Select a practice mode and choose **New Test**.
+3. Click the code area or start typing the displayed code.
+4. Check your speed, accuracy, time, and errors as you type.
+5. When the test ends, review your results. Save the score if the backend is running.
+6. Open **Stats** to view your personal history, or **Leaderboard** for saved scores.
 
-## 🎮 How to Use
+Use **Settings** to change the theme and typing display. The app also includes keyboard shortcuts shown below the typing area.
 
-1. Pick a **language** and drag the **difficulty slider** (1 = Novice, 5 = Hacker).
-2. Choose a **mode**: Single Snippet, Timed, or Marathon.
-3. Click into the code area (or just start typing) and type the code exactly as shown.
-4. Watch your **WPM, accuracy, time, and errors** update live.
-5. Press `Tab` to auto-fill indentation spaces, `Backspace` to correct mistakes, `Esc` to refocus the input.
-6. When you finish, check your **results screen** — save your score to the leaderboard if you're connected to the backend.
-7. Visit **Stats** to see your personal history, or **Leaderboard** to see how you stack up.
-8. Head to **Settings** to pick a theme, tweak fonts/cursor/sound, and set your display name.
+## API overview
 
----
+The backend provides these endpoints:
 
-## 🔌 Backend API Reference
-
-| Method | Endpoint | Description |
+| Method | Endpoint | Purpose |
 |---|---|---|
-| `GET` | `/api/languages` | List all supported languages and their difficulty levels |
-| `GET` | `/api/snippets?language=python&difficulty=3&count=1` | Fetch one or more snippets |
-| `GET` | `/api/snippets/random?difficulty=3` | Fetch one random snippet from a random language |
-| `POST` | `/api/results` | Save a completed test result (`username`, `wpm`, `accuracy`, `language`, `difficulty`, `time`, `errors`, `rawWpm`) |
-| `GET` | `/api/results?username=&limit=` | Fetch recent results, optionally filtered by user |
-| `GET` | `/api/leaderboard?language=&difficulty=&limit=` | Fetch the top scores, optionally filtered |
+| `GET` | `/` | Check that the API is running |
+| `GET` | `/api/languages` | List supported languages and difficulty levels |
+| `GET` | `/api/snippets?language=python&difficulty=3&count=1` | Get snippets for a language and difficulty |
+| `GET` | `/api/snippets/random?difficulty=3` | Get a snippet from a randomly selected language |
+| `POST` | `/api/results` | Save a score; `wpm` and `accuracy` are required numbers |
+| `GET` | `/api/results?username=Alex&limit=20` | Get recent scores, optionally filtered by username |
+| `GET` | `/api/leaderboard?language=python&difficulty=3&limit=10` | Get top scores, optionally filtered by language and difficulty |
 
-Results are persisted to `backend/data/results.json` (auto-created, capped at the most recent 500 entries).
+Saved backend scores are stored in `backend/data/results.json`. The backend creates this file when it saves the first score and keeps up to 500 recent scores.
 
----
+## Project structure
 
-## 🛠️ Tech Stack
+```text
+Code Type/
+├── frontend/
+│   ├── index.html             # Main web page
+│   ├── css/                   # Layout, styles, and themes
+│   └── js/                    # Typing app, animation, and offline snippets
+├── backend/
+│   ├── server.js              # Starts the API server
+│   ├── routes/                # API endpoint definitions
+│   ├── controllers/           # API request handling
+│   └── data/                  # Snippet collections and saved scores
+└── README.md
+```
 
-- **Frontend:** Vanilla HTML5, CSS3 (custom properties for theming), and JavaScript (ES6+) — zero build tooling, zero frontend dependencies. Visuals powered by a hand-rolled `<canvas>` particle system and the Web Audio API for sound effects.
-- **Backend:** Node.js + Express, with a simple JSON-file-backed results store. CORS-enabled for easy local development.
+## Adding snippets
 
----
-
-## 🧩 Extending Code Type
-
-- **Add a new language:** create `backend/data/<language>.js` following the existing files' shape (`{ 1: [...], 2: [...], ..., 5: [...] }`), register it in `backend/data/index.js`, then add a matching `<option>` in the frontend's language `<select>` elements and an entry in `FILE_EXT` inside `frontend/js/app.js`.
-- **Add a new theme:** add a new `[data-theme="yourtheme"] { ... }` block to `frontend/css/themes.css` (copy an existing block as a template) and register it in the `THEMES` array at the top of `frontend/js/app.js`.
-- **Add more snippets:** just append more strings to any difficulty array in the `backend/data/*.js` files.
-
----
-
-## 📄 License
-
-MIT — do whatever you'd like with it. Have fun, and type fast. ⚡
+Snippet collections are in `backend/data/`, grouped by language and difficulty. Add a snippet to the appropriate difficulty list. The frontend also has local fallback snippets in `frontend/js/snippets.js` for offline use.
