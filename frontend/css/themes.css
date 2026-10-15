@@ -1,0 +1,219 @@
+/* =========================================================
+   THEME SYSTEM — each [data-theme] sets a full palette of
+   CSS custom properties consumed throughout style.css
+   ========================================================= */
+
+:root {
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-size: 18px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+}
+
+/* ---------------- CYBERPUNK (default) ---------------- */
+[data-theme="cyberpunk"] {
+  --bg: #0a0118;
+  --bg-alt: #120524;
+  --surface: #1a0b30;
+  --surface-2: #23104099;
+  --primary: #ff2e97;
+  --secondary: #00f6ff;
+  --tertiary: #ffe600;
+  --accent: #b967ff;
+  --text: #f2e9ff;
+  --text-dim: #9a86c9;
+  --text-faint: #5c4d85;
+  --correct: #00f6ff;
+  --incorrect: #ff2e5b;
+  --incorrect-bg: rgba(255, 46, 91, 0.25);
+  --cursor: #ffe600;
+  --border: #38206b;
+  --glow: 0 0 20px rgba(255, 46, 151, 0.55);
+  --gradient: linear-gradient(135deg, #ff2e97, #b967ff 45%, #00f6ff);
+  --particle-color: 255, 46, 151;
+}
+
+/* ---------------- SYNTHWAVE ---------------- */
+[data-theme="synthwave"] {
+  --bg: #17092b;
+  --bg-alt: #1f0e3a;
+  --surface: #2a1250;
+  --surface-2: #3a1a6b99;
+  --primary: #ff5fac;
+  --secondary: #01e8e8;
+  --tertiary: #ffd23f;
+  --accent: #7b5cff;
+  --text: #fef6ff;
+  --text-dim: #b79ce0;
+  --text-faint: #6d5497;
+  --correct: #01e8e8;
+  --incorrect: #ff3860;
+  --incorrect-bg: rgba(255, 56, 96, 0.25);
+  --cursor: #ffd23f;
+  --border: #4a2a86;
+  --glow: 0 0 25px rgba(1, 232, 232, 0.5);
+  --gradient: linear-gradient(135deg, #ff5fac, #7b5cff 50%, #01e8e8);
+  --particle-color: 1, 232, 232;
+}
+
+/* ---------------- MATRIX ---------------- */
+[data-theme="matrix"] {
+  --bg: #000804;
+  --bg-alt: #001505;
+  --surface: #001f0a;
+  --surface-2: #00330f99;
+  --primary: #00ff6a;
+  --secondary: #58ff9a;
+  --tertiary: #b8ffd1;
+  --accent: #00c853;
+  --text: #d5ffe4;
+  --text-dim: #4f9c6c;
+  --text-faint: #2c5c3f;
+  --correct: #00ff6a;
+  --incorrect: #ff3b3b;
+  --incorrect-bg: rgba(255, 59, 59, 0.22);
+  --cursor: #b8ffd1;
+  --border: #0a4023;
+  --glow: 0 0 22px rgba(0, 255, 106, 0.45);
+  --gradient: linear-gradient(135deg, #003c1a, #00ff6a 55%, #b8ffd1);
+  --particle-color: 0, 255, 106;
+}
+
+/* ---------------- DRACULA ---------------- */
+[data-theme="dracula"] {
+  --bg: #1e1f29;
+  --bg-alt: #24263a;
+  --surface: #2a2d3e;
+  --surface-2: #383b5299;
+  --primary: #ff79c6;
+  --secondary: #8be9fd;
+  --tertiary: #f1fa8c;
+  --accent: #bd93f9;
+  --text: #f8f8f2;
+  --text-dim: #a4a7c4;
+  --text-faint: #6272a4;
+  --correct: #50fa7b;
+  --incorrect: #ff5555;
+  --incorrect-bg: rgba(255, 85, 85, 0.22);
+  --cursor: #f1fa8c;
+  --border: #44475a;
+  --glow: 0 0 18px rgba(189, 147, 249, 0.4);
+  --gradient: linear-gradient(135deg, #ff79c6, #bd93f9 50%, #8be9fd);
+  --particle-color: 189, 147, 249;
+}
+
+/* ---------------- SUNSET ---------------- */
+[data-theme="sunset"] {
+  --bg: #1a0e10;
+  --bg-alt: #24141a;
+  --surface: #2e1a20;
+  --surface-2: #40232b99;
+  --primary: #ff7849;
+  --secondary: #ffb238;
+  --tertiary: #ff4e83;
+  --accent: #ff9b5c;
+  --text: #fff2e6;
+  --text-dim: #d0a290;
+  --text-faint: #8c6153;
+  --correct: #ffb238;
+  --incorrect: #ff3860;
+  --incorrect-bg: rgba(255, 56, 96, 0.24);
+  --cursor: #ff4e83;
+  --border: #5c2e30;
+  --glow: 0 0 22px rgba(255, 120, 73, 0.5);
+  --gradient: linear-gradient(135deg, #ff4e83, #ff7849 50%, #ffb238);
+  --particle-color: 255, 120, 73;
+}
+
+/* ---------------- OCEAN ---------------- */
+[data-theme="ocean"] {
+  --bg: #041322;
+  --bg-alt: #071d33;
+  --surface: #0b2942;
+  --surface-2: #0f375699;
+  --primary: #29e7cd;
+  --secondary: #2b8fff;
+  --tertiary: #a0fff0;
+  --accent: #37c9ff;
+  --text: #e6fbff;
+  --text-dim: #7fb3cc;
+  --text-faint: #3d6d84;
+  --correct: #29e7cd;
+  --incorrect: #ff5c6c;
+  --incorrect-bg: rgba(255, 92, 108, 0.22);
+  --cursor: #a0fff0;
+  --border: #123c5c;
+  --glow: 0 0 22px rgba(41, 231, 205, 0.45);
+  --gradient: linear-gradient(135deg, #2b8fff, #29e7cd 50%, #a0fff0);
+  --particle-color: 41, 231, 205;
+}
+
+/* ---------------- GALAXY ---------------- */
+[data-theme="galaxy"] {
+  --bg: #05040f;
+  --bg-alt: #0a0820;
+  --surface: #120e33;
+  --surface-2: #1c164d99;
+  --primary: #c77dff;
+  --secondary: #7de8ff;
+  --tertiary: #ffd6ff;
+  --accent: #9d4edd;
+  --text: #f1e9ff;
+  --text-dim: #9484c4;
+  --text-faint: #574a80;
+  --correct: #7de8ff;
+  --incorrect: #ff6b9d;
+  --incorrect-bg: rgba(255, 107, 157, 0.22);
+  --cursor: #ffd6ff;
+  --border: #2f2465;
+  --glow: 0 0 26px rgba(199, 125, 255, 0.5);
+  --gradient: linear-gradient(135deg, #7de8ff, #c77dff 50%, #ffd6ff);
+  --particle-color: 199, 125, 255;
+}
+
+/* ---------------- LIGHT / MINIMAL (for those who want calm) ---------------- */
+[data-theme="daylight"] {
+  --bg: #f4f5f9;
+  --bg-alt: #eceef5;
+  --surface: #ffffff;
+  --surface-2: #e7e9f2cc;
+  --primary: #4361ee;
+  --secondary: #3a86ff;
+  --tertiary: #7209b7;
+  --accent: #4895ef;
+  --text: #1b1d2b;
+  --text-dim: #5a5f78;
+  --text-faint: #9aa0bd;
+  --correct: #2a9d8f;
+  --incorrect: #e63946;
+  --incorrect-bg: rgba(230, 57, 70, 0.15);
+  --cursor: #4361ee;
+  --border: #d6daea;
+  --glow: 0 0 16px rgba(67, 97, 238, 0.25);
+  --gradient: linear-gradient(135deg, #4361ee, #3a86ff 50%, #4895ef);
+  --particle-color: 67, 97, 238;
+}
+
+/* ---------------- LAVA ---------------- */
+[data-theme="lava"] {
+  --bg: #0d0603;
+  --bg-alt: #180a04;
+  --surface: #241006;
+  --surface-2: #331608aa;
+  --primary: #ff4500;
+  --secondary: #ffae00;
+  --tertiary: #ff0044;
+  --accent: #ff7300;
+  --text: #fff0e0;
+  --text-dim: #d18a5c;
+  --text-faint: #7a4a2c;
+  --correct: #ffae00;
+  --incorrect: #ff0044;
+  --incorrect-bg: rgba(255, 0, 68, 0.25);
+  --cursor: #ff4500;
+  --border: #4a2410;
+  --glow: 0 0 25px rgba(255, 69, 0, 0.55);
+  --gradient: linear-gradient(135deg, #ff0044, #ff4500 50%, #ffae00);
+  --particle-color: 255, 100, 0;
+}
