@@ -57,6 +57,8 @@
   let currentPracticeType = "code";
 
   let targetText = "";
+  let lastCodeSnippet = "";
+  let lastEnglishSample = "";
   let testRequestId = 0;
   let charStates = []; // 'pending' | 'correct' | 'incorrect'
   let erroredOnce = []; // bool per index, so repeat mistakes at same pos don't double count
@@ -64,6 +66,8 @@
   let charElements = [];
 
   let testActive = false;
+  let testFinished = false;
+  let timedBatchLoading = false;
   let testStartTime = null;
   let testEndTime = null;
   let totalKeystrokes = 0;
@@ -356,30 +360,37 @@
     }
   }
 
-  async function fetchSnippets(language, difficulty, count) {
+  async function fetchSnippets(language, difficulty, count, previous = "") {
     try {
-      const url = `${apiBase()}/api/snippets?language=${encodeURIComponent(language)}&difficulty=${difficulty}&count=${count}`;
+      const requestedCount = Math.max(count, Math.min(20, count + 5));
+      const url = `${apiBase()}/api/snippets?language=${encodeURIComponent(language)}&difficulty=${difficulty}&count=${requestedCount}`;
       const res = await fetch(url, { signal: AbortSignal.timeout(4000) });
       if (!res.ok) throw new Error("bad status");
       const data = await res.json();
       el.connDot.classList.add("online");
       el.connDot.classList.remove("offline");
-      return data.snippets;
+      return chooseDifferentItems(data.snippets || [], count, previous);
     } catch {
       el.connDot.classList.add("offline");
       el.connDot.classList.remove("online");
-      return fallbackSnippets(language, difficulty, count);
+      return fallbackSnippets(language, difficulty, count, previous);
     }
   }
 
-  function fallbackSnippets(language, difficulty, count) {
+  function fallbackSnippets(language, difficulty, count, previous = "") {
     const bank = window.CodeTypeFallbackSnippets;
     const pool = (bank[language] && bank[language][difficulty]) || bank.python[1];
-    const out = [];
-    for (let i = 0; i < count; i++) {
-      out.push(pool[Math.floor(Math.random() * pool.length)]);
+    return chooseDifferentItems(pool, count, previous);
+  }
+
+  function chooseDifferentItems(items, count, previous = "") {
+    const shuffled = [...new Set(items)].sort(() => Math.random() - 0.5);
+    const chosen = shuffled.filter((item) => item !== previous).slice(0, count);
+    if (chosen.length < count) {
+      chosen.push(...shuffled.filter((item) => !chosen.includes(item)).slice(0, count - chosen.length));
     }
-    return out;
+    while (chosen.length < count && shuffled.length) chosen.push(shuffled[chosen.length % shuffled.length]);
+    return chosen;
   }
 
   async function postResult(entry) {
@@ -470,32 +481,45 @@
 
   el.languageSelect.addEventListener("change", () => {
     currentLanguage = el.languageSelect.value;
+    if (currentPracticeType === "code") startNewTest();
   });
 
   el.modeSelect.addEventListener("change", () => {
     currentMode = el.modeSelect.value;
+    startNewTest();
   });
 
   const ENGLISH_SAMPLES = {
     sentence: [
-      "The sun warmed the quiet garden.",
-      "A curious mind learns something new every day.",
-      "Although progress may seem gradual, consistent practice strengthens both focus and confidence.",
-      "When challenges appear unexpectedly, a calm approach helps us examine each detail and choose a thoughtful response.",
-      "Reliable progress rarely arrives by accident; it grows from deliberate attention, thoughtful reflection, and the willingness to improve after every attempt."
+      ["The sun warmed the quiet garden.", "A small bird landed beside the old stone fountain.", "Maya carried a bright red umbrella through the rain.", "Fresh bread cooled slowly on the kitchen table."],
+      ["A curious mind learns something new every day.", "Careful practice turns small improvements into lasting skills.", "The hikers followed a narrow trail beyond the river.", "Clear notes make complicated ideas easier to remember."],
+      ["Although progress may seem gradual, consistent practice strengthens both focus and confidence.", "Because each experiment revealed a different result, the researchers revised their original explanation.", "The committee compared several proposals before choosing a practical and affordable solution.", "Whenever unexpected problems arise, patient analysis can reveal opportunities hidden within the challenge."],
+      ["When challenges appear unexpectedly, a calm approach helps us examine each detail and choose a thoughtful response.", "Despite receiving conflicting reports, the coordinator carefully verified every claim before announcing the final decision.", "As the deadline approached, the team reorganized its priorities without sacrificing the quality of the finished work.", "Unless new evidence changes the situation, the engineers will continue testing the revised design under realistic conditions."],
+      ["Reliable progress rarely arrives by accident; it grows from deliberate attention, thoughtful reflection, and the willingness to improve after every attempt.", "Although the initial results appeared conclusive, a closer examination exposed several assumptions that required further investigation.", "The most persuasive explanation accounts for contradictory evidence rather than dismissing observations that complicate its central argument.", "By distinguishing measurable outcomes from personal impressions, the analysts produced recommendations that were both transparent and reproducible."]
     ],
     paragraph: [
-      "Every day offers a chance to learn. Stay curious, take your time, and keep going.",
-      "Every day offers a small chance to make progress. Read carefully, focus on each word, and keep a steady rhythm. With practice, accuracy becomes natural and confidence grows.",
-      "Learning a new skill takes patience and attention. At first, each step may feel unfamiliar, but regular practice makes difficult tasks easier. Notice what works, learn from mistakes, and celebrate steady improvement.",
-      "A thoughtful reader does more than recognize individual words; they follow how ideas connect, notice subtle changes in tone, and pause when a sentence deserves closer attention. This careful rhythm improves both understanding and accuracy. They compare evidence, question assumptions, and revise conclusions when new information emerges.",
-      "Meaningful progress depends on more than repetition: it requires observation, honest evaluation, and the flexibility to adjust an approach when circumstances change. By balancing persistence with reflection, we turn small discoveries into durable knowledge and communicate our ideas with greater precision. Even when evidence is incomplete or contradictory, careful reasoning helps separate what is known from what is merely assumed, allowing a better decision to emerge."
+      ["Every day offers a chance to learn. Stay curious, take your time, and keep going.", "A good routine makes busy mornings easier. Pack your bag, check the weather, and leave with enough time to enjoy the walk.", "The library was quiet after lunch. A student found a book, chose a sunny seat, and began to read.", "Cooking together can make an ordinary evening special. We shared the work, tried a new recipe, and saved a slice for tomorrow."],
+      ["Every day offers a small chance to make progress. Read carefully, focus on each word, and keep a steady rhythm. With practice, accuracy becomes natural and confidence grows.", "A community garden brings neighbors together. They prepare the soil, share tools, and learn which plants thrive in each season. Their harvest is useful, but the friendships they build are just as valuable.", "Before a long walk, check your map and bring water. A steady pace helps you enjoy the scenery without becoming tired too quickly. Even a short trip can feel like an adventure when you notice the details along the way.", "Keeping a notebook is a simple way to organize new ideas. Write down questions, record useful observations, and review your notes at the end of the week. Small details often become more meaningful after you have had time to think."],
+      ["Learning a new skill takes patience and attention. At first, each step may feel unfamiliar, but regular practice makes difficult tasks easier. Notice what works, learn from mistakes, and celebrate steady improvement.", "When a neighborhood plans a shared event, clear communication helps everyone contribute. Volunteers divide the tasks, confirm the schedule, and prepare for unexpected changes. The event succeeds because people combine different skills and remain willing to help.", "Scientists often begin with a question that can be tested through observation. They collect measurements, compare results, and repeat procedures to check for mistakes. If the evidence disagrees with an early idea, they revise the explanation rather than changing the facts.", "A useful travel plan leaves room for both preparation and discovery. Travelers check local conditions, learn a few familiar phrases, and keep important information nearby. At the same time, an unplanned conversation or quiet side street can become the most memorable part of the journey."],
+      ["A thoughtful reader does more than recognize individual words; they follow how ideas connect, notice subtle changes in tone, and pause when a sentence deserves closer attention. This careful rhythm improves both understanding and accuracy. They compare evidence, question assumptions, and revise conclusions when new information emerges.", "A successful team does not avoid disagreement; it creates a fair way to examine competing ideas. Members explain their reasoning, ask specific questions, and separate criticism of a proposal from criticism of its author. Once the strongest evidence is visible, the group can make a decision and clearly explain its tradeoffs.", "Maintaining a historic building requires more than replacing worn materials. Specialists study old records, inspect the structure, and identify which features carry cultural significance. Their recommendations must balance safety, cost, accessibility, and respect for the craftsmanship that gives the place its character.", "A public report is most useful when its conclusions can be traced to reliable evidence. Writers define the scope, explain how information was gathered, and acknowledge uncertainty where the data is incomplete. This transparency lets readers assess the findings and understand which questions remain unresolved."],
+      ["Meaningful progress depends on more than repetition: it requires observation, honest evaluation, and the flexibility to adjust an approach when circumstances change. By balancing persistence with reflection, we turn small discoveries into durable knowledge and communicate our ideas with greater precision. Even when evidence is incomplete or contradictory, careful reasoning helps separate what is known from what is merely assumed, allowing a better decision to emerge.", "When a complex system behaves unpredictably, an effective investigation begins by distinguishing verified observations from interpretations. Researchers document the conditions, test one explanation at a time, and preserve results that challenge their expectations. This disciplined process may take longer than guessing, but it makes the eventual conclusion more trustworthy and easier for others to reproduce.", "Public decisions often involve competing priorities that cannot all be maximized at once. A responsible analysis identifies who benefits, who bears the costs, and which assumptions could change the outcome. By explaining uncertainty alongside measurable evidence, decision makers can defend their choices without suggesting that difficult tradeoffs have simple or universally agreeable answers.", "Historical accounts become more reliable when authors examine sources created for different audiences and purposes. A letter, a government record, and a later interview may describe the same event from sharply different perspectives. Comparing their omissions as well as their claims helps readers understand how memory, authority, and context influence the stories societies choose to preserve."]
     ]
   };
 
-  function getEnglishSample() {
+  function getEnglishSamples(count, previous = lastEnglishSample) {
     const samples = ENGLISH_SAMPLES[el.englishSampleSelect.value];
-    return samples[currentDifficulty - 1];
+    const available = [...samples[currentDifficulty - 1]];
+    const chosen = [];
+    while (chosen.length < count && available.length) {
+      const eligible = available.filter((sample) => sample !== previous);
+      const choices = eligible.length ? eligible : available;
+      const sample = choices[Math.floor(Math.random() * choices.length)];
+      chosen.push(sample);
+      available.splice(available.indexOf(sample), 1);
+      previous = sample;
+    }
+    while (chosen.length < count) chosen.push(chosen[chosen.length % chosen.length]);
+    return chosen;
   }
 
   function updatePracticeControls() {
@@ -534,9 +558,12 @@
     let snippets;
     if (practiceType === "code") {
       el.codeContent.innerHTML = `<span class="loading-msg">Loading snippet…</span>`;
-      snippets = await fetchSnippets(language, difficulty, snippetCount);
+      snippets = await fetchSnippets(language, difficulty, snippetCount, lastCodeSnippet);
+      lastCodeSnippet = snippets[snippets.length - 1] || lastCodeSnippet;
     } else {
-      snippets = [getEnglishSample()];
+      const englishRoundCount = mode === "marathon" ? 3 : mode === "timed" ? 4 : 1;
+      snippets = getEnglishSamples(englishRoundCount);
+      lastEnglishSample = snippets[snippets.length - 1] || lastEnglishSample;
     }
     if (requestId !== testRequestId) return;
 
@@ -548,6 +575,8 @@
     erroredOnce = new Array(targetText.length).fill(false);
     cursorIndex = 0;
     testActive = false;
+    testFinished = false;
+    timedBatchLoading = false;
     testStartTime = null;
     totalKeystrokes = 0;
     totalErrors = 0;
@@ -647,6 +676,7 @@
     testStartTime = Date.now();
     timerInterval = setInterval(() => {
       elapsedSeconds = (Date.now() - testStartTime) / 1000;
+      if (currentMode === "timed") elapsedSeconds = Math.min(60, elapsedSeconds);
       const stats = computeStats();
       updateLiveStatsDisplay(stats.wpm, stats.accuracy, elapsedSeconds, totalErrors);
       wpmHistory.push({ t: Math.round(elapsedSeconds), wpm: stats.wpm });
@@ -654,6 +684,7 @@
       if (currentMode === "timed") {
         timedModeSecondsLeft = Math.max(0, 60 - elapsedSeconds);
         if (timedModeSecondsLeft <= 0) {
+          elapsedSeconds = 60;
           finishTest();
         }
       }
@@ -676,6 +707,7 @@
   }
 
   function handleTypedChar(char) {
+    if (testFinished) return;
     if (!testActive) {
       testActive = true;
       startTimer();
@@ -703,7 +735,8 @@
     applyCharClasses([cursorIndex - 1, cursorIndex]);
 
     if (cursorIndex >= targetText.length) {
-      finishTest();
+      if (currentMode === "timed") appendTimedSnippets();
+      else finishTest();
     }
   }
 
@@ -730,8 +763,32 @@
     for (let i = startIndex; i < cursorIndex; i++) updateCharClass(charElements[i], i);
     if (charElements[cursorIndex]) updateCharClass(charElements[cursorIndex], cursorIndex);
     scrollToCursor();
-    if (cursorIndex >= targetText.length) finishTest();
+    if (cursorIndex >= targetText.length) {
+      if (currentMode === "timed") appendTimedSnippets();
+      else finishTest();
+    }
     return true;
+  }
+
+  async function appendTimedSnippets() {
+    if (timedBatchLoading || testFinished || currentMode !== "timed") return;
+    timedBatchLoading = true;
+    const requestId = testRequestId;
+    try {
+      const snippets = currentPracticeType === "code"
+        ? await fetchSnippets(currentLanguage, currentDifficulty, 1, lastCodeSnippet)
+        : getEnglishSamples(1);
+      if (requestId !== testRequestId || testFinished || currentMode !== "timed") return;
+      const addition = `\n\n${snippets.join("\n\n")}`;
+      if (currentPracticeType === "code") lastCodeSnippet = snippets[snippets.length - 1] || lastCodeSnippet;
+      else lastEnglishSample = snippets[snippets.length - 1] || lastEnglishSample;
+      targetText += addition;
+      charStates.push(...new Array(addition.length).fill("pending"));
+      erroredOnce.push(...new Array(addition.length).fill(false));
+      renderCode();
+    } finally {
+      timedBatchLoading = false;
+    }
   }
 
   function shakeArena() {
@@ -742,6 +799,8 @@
   }
 
   function finishTest() {
+    if (testFinished) return;
+    testFinished = true;
     stopTimer();
     testEndTime = Date.now();
     const stats = computeStats();

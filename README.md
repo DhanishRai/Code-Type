@@ -9,7 +9,7 @@ Choose a language, difficulty, and practice mode. The app shows your typing spee
 - Practice with five programming languages or built-in English typing passages.
 - Choose a short sentence or paragraph for English practice.
 - Increase difficulty to select more advanced code snippets or more challenging English passages.
-- Choose Single Snippet, Timed (60 seconds), or Marathon (three snippets) mode.
+- Choose Single Snippet, Timed (60 seconds), or Marathon (three code snippets or three English rounds) mode. Timed practice continues loading text until the 60-second timer ends.
 - See your words per minute (WPM), accuracy, elapsed time, and errors.
 - View your personal statistics and recent test history.
 - Choose from nine themes and customize the typing display.
@@ -68,8 +68,8 @@ If your backend uses a different address, open **Settings** in the app and chang
 
 1. Choose **Code snippets** or **English typing** in the Practice selector.
 2. For English, choose a sentence or paragraph.
-3. Select a practice mode and choose **New Test**.
-4. Adjust **Difficulty** to get more advanced code snippets or more challenging English text.
+3. Select a practice mode; changing the mode immediately loads a fresh test. Use **New Test** whenever you want another one.
+4. Adjust **Difficulty** to immediately load more advanced code snippets or more challenging English text.
 5. Click the typing area or start typing the displayed text. Use **Restart** (or press Tab) to practice it again.
 6. Check your speed, accuracy, time, and errors as you type.
 7. When the test ends, review your results. Save the score if the backend is running.
