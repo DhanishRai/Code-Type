@@ -9,6 +9,7 @@ Choose a language, difficulty, and practice mode. The app shows your typing spee
 - Practice with five programming languages and five difficulty levels, or choose English typing and custom text.
 - Paste or upload plain-text/code files in any language, then repeat the same text as often as you like.
 - Choose a short English sentence or paragraph, or edit the sample before practicing.
+- Adjust difficulty for all practice types: code difficulty selects snippet complexity, while higher levels make any target text fainter without changing its content.
 - Choose Single Snippet, Timed (60 seconds), or Marathon (three snippets) mode.
 - See your words per minute (WPM), accuracy, elapsed time, and errors.
 - View your personal statistics and recent test history.
@@ -69,10 +70,11 @@ If your backend uses a different address, open **Settings** in the app and chang
 1. Choose **Code snippets**, **English typing**, or **My text or code** in the Practice selector.
 2. For custom practice, paste text or upload a plain-text/code file. For English, select a sentence or paragraph; either text can be edited.
 3. Select a practice mode and choose **New Test**.
-4. Click the typing area or start typing the displayed text. Restart at any time to practice the same custom text again.
-5. Check your speed, accuracy, time, and errors as you type.
-6. When the test ends, review your results. Save the score if the backend is running.
-7. Open **Stats** to view your personal history, or **Leaderboard** for saved scores.
+4. Adjust **Difficulty** as desired. For pasted/uploaded text and English, higher difficulty fades the target more while keeping the same text.
+5. Click the typing area or start typing the displayed text. Choose **Repeat this text** (or press Tab) to practice the same custom text again.
+6. Check your speed, accuracy, time, and errors as you type.
+7. When the test ends, review your results. Save the score if the backend is running.
+8. Open **Stats** to view your personal history, or **Leaderboard** for saved scores.
 
 Custom text is kept in browser storage and is not uploaded to the backend. No application-level length limit is imposed; extremely large files may still be limited by available browser memory.
 

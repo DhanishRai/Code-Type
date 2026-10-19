@@ -508,15 +508,18 @@ input[type="range"]::-moz-range-thumb {
   border-radius: 3px;
   transition: color 0.08s ease, background 0.08s ease;
   color: var(--text-faint);
+  opacity: var(--target-opacity, 0.82);
 }
-#code-content .char.correct { color: var(--correct); }
+#code-content .char.correct { color: var(--correct); opacity: 1; }
 #code-content .char.incorrect {
   color: var(--incorrect);
+  opacity: 1;
   background: var(--incorrect-bg);
   text-decoration: underline wavy var(--incorrect);
 }
 #code-content .char.current {
   color: var(--text);
+  opacity: 1;
 }
 
 /* cursor styles */

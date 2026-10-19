@@ -91,6 +91,7 @@
     difficultySlider: $("difficulty-slider"),
     difficultyBadge: $("difficulty-badge"),
     difficultyControl: $("difficulty-control"),
+    difficultyHelp: $("difficulty-help"),
     modeSelect: $("mode-select"),
     practiceTypeSelect: $("practice-type-select"),
     textSourcePanel: $("text-source-panel"),
@@ -99,6 +100,7 @@
     englishSampleControl: $("english-sample-control"),
     englishSampleSelect: $("english-sample-select"),
     practiceTextInput: $("practice-text-input"),
+    focusPracticeTextBtn: $("focus-practice-text-btn"),
     practiceFileInput: $("practice-file-input"),
     practiceTextStatus: $("practice-text-status"),
     newTestBtn: $("new-test-btn"),
@@ -458,6 +460,11 @@
   function updateDifficultyBadge(diff) {
     el.difficultyBadge.textContent = DIFF_LABELS[diff];
     el.difficultyBadge.className = `diff-badge diff-${diff}`;
+    const targetOpacity = [0.82, 0.68, 0.55, 0.43, 0.32][diff - 1];
+    document.documentElement.style.setProperty("--target-opacity", targetOpacity);
+    el.difficultyHelp.textContent = currentPracticeType === "code"
+      ? "Chooses code complexity; higher levels also make the target fainter."
+      : "Higher levels make the target text fainter. Your text stays unchanged and repeatable.";
   }
 
   el.difficultySlider.addEventListener("input", () => {
@@ -500,8 +507,9 @@
     const isCode = currentPracticeType === "code";
     const isEnglish = currentPracticeType === "english";
     if (isCode) currentLanguage = el.languageSelect.value;
+    el.restartBtn.textContent = isCode ? "⟲ Restart snippet (Tab)" : "⟲ Repeat this text (Tab)";
+    updateDifficultyBadge(currentDifficulty);
     el.languageControl.classList.toggle("hidden", !isCode);
-    el.difficultyControl.classList.toggle("hidden", !isCode);
     el.textSourcePanel.classList.toggle("hidden", isCode);
     el.englishSampleControl.classList.toggle("hidden", !isEnglish);
 
@@ -521,6 +529,7 @@
   }
 
   el.practiceTypeSelect.addEventListener("change", updatePracticeControls);
+  el.focusPracticeTextBtn.addEventListener("click", () => el.practiceTextInput.focus());
   el.englishSampleSelect.addEventListener("change", () => {
     el.practiceTextInput.value = ENGLISH_SAMPLES[el.englishSampleSelect.value];
     el.practiceTextStatus.textContent = "Sample loaded. Start or restart to practice this text again.";
@@ -533,12 +542,12 @@
     const file = el.practiceFileInput.files && el.practiceFileInput.files[0];
     if (!file) return;
     try {
-      const contents = (await file.text()).replace(/\r\n?/g, "\n");
+      const contents = (await file.text()).replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n");
       customTextFilename = file.name || "custom.txt";
       el.practiceTypeSelect.value = "custom";
       updatePracticeControls();
       el.practiceTextInput.value = contents;
-      el.practiceTextStatus.textContent = `Loaded ${file.name} · ${contents.length.toLocaleString()} characters.`;
+      el.practiceTextStatus.textContent = `Loaded ${file.name} · ${contents.length.toLocaleString()} characters. This is now the typing target; restart to practice it again.`;
       saveCustomText(contents);
       toast(`Loaded ${file.name}`);
     } catch {
