@@ -4,7 +4,6 @@
 
 (function () {
   "use strict";
-
   /* ============ CONSTANTS ============ */
   const THEMES = [
     { key: "cyberpunk", name: "Cyberpunk", colors: ["#ff2e97", "#00f6ff"] },
@@ -55,11 +54,14 @@
   let currentLanguage = "python";
   let currentDifficulty = 1;
   let currentMode = "snippet";
+  let currentPracticeType = "code";
+  let customTextFilename = "custom.txt";
 
   let targetText = "";
   let charStates = []; // 'pending' | 'correct' | 'incorrect'
   let erroredOnce = []; // bool per index, so repeat mistakes at same pos don't double count
   let cursorIndex = 0;
+  let charElements = [];
 
   let testActive = false;
   let testStartTime = null;
@@ -85,9 +87,20 @@
     themeToggleBtn: $("theme-toggle-btn"),
 
     languageSelect: $("language-select"),
+    languageControl: $("language-control"),
     difficultySlider: $("difficulty-slider"),
     difficultyBadge: $("difficulty-badge"),
+    difficultyControl: $("difficulty-control"),
     modeSelect: $("mode-select"),
+    practiceTypeSelect: $("practice-type-select"),
+    textSourcePanel: $("text-source-panel"),
+    textSourceTitle: $("text-source-title"),
+    textSourceHelp: $("text-source-help"),
+    englishSampleControl: $("english-sample-control"),
+    englishSampleSelect: $("english-sample-select"),
+    practiceTextInput: $("practice-text-input"),
+    practiceFileInput: $("practice-file-input"),
+    practiceTextStatus: $("practice-text-status"),
     newTestBtn: $("new-test-btn"),
     restartBtn: $("restart-btn"),
 
@@ -460,8 +473,87 @@
     currentMode = el.modeSelect.value;
   });
 
+  const ENGLISH_SAMPLES = {
+    sentence: "A curious mind learns something new every day.",
+    paragraph: "Every day offers a small chance to make progress. Read carefully, focus on each word, and keep a steady rhythm. With practice, accuracy becomes natural and confidence grows."
+  };
+
+  function getSavedCustomText() {
+    try {
+      return localStorage.getItem("codetype_custom_text_v1") || "";
+    } catch {
+      return "";
+    }
+  }
+
+  function saveCustomText(text) {
+    try {
+      localStorage.setItem("codetype_custom_text_v1", text);
+      el.practiceTextStatus.textContent = `${text.length.toLocaleString()} characters ready. Your custom text is saved in this browser.`;
+    } catch {
+      el.practiceTextStatus.textContent = `${text.length.toLocaleString()} characters ready. Browser storage is full; the text is available until this page is closed.`;
+    }
+  }
+
+  function updatePracticeControls() {
+    currentPracticeType = el.practiceTypeSelect.value;
+    const isCode = currentPracticeType === "code";
+    const isEnglish = currentPracticeType === "english";
+    if (isCode) currentLanguage = el.languageSelect.value;
+    el.languageControl.classList.toggle("hidden", !isCode);
+    el.difficultyControl.classList.toggle("hidden", !isCode);
+    el.textSourcePanel.classList.toggle("hidden", isCode);
+    el.englishSampleControl.classList.toggle("hidden", !isEnglish);
+
+    if (isEnglish) {
+      el.textSourceTitle.textContent = "English typing practice";
+      el.textSourceHelp.textContent = "Choose a sentence or paragraph, or edit the text below. Your selection stays available to repeat.";
+      el.practiceTextInput.value = ENGLISH_SAMPLES[el.englishSampleSelect.value];
+      el.practiceTextStatus.textContent = "Select a sample or enter your own English text, then start or restart to practice it again.";
+    } else if (!isCode) {
+      el.textSourceTitle.textContent = "Your text or code";
+      el.textSourceHelp.textContent = "Paste text or upload a plain-text source file in any programming language. Restart to practice the same content again.";
+      el.practiceTextInput.value = getSavedCustomText();
+      el.practiceTextStatus.textContent = el.practiceTextInput.value
+        ? `${el.practiceTextInput.value.length.toLocaleString()} characters ready. Your custom text is saved in this browser.`
+        : "No length limit is set by the app. Very large files may depend on your browser's available memory.";
+    }
+  }
+
+  el.practiceTypeSelect.addEventListener("change", updatePracticeControls);
+  el.englishSampleSelect.addEventListener("change", () => {
+    el.practiceTextInput.value = ENGLISH_SAMPLES[el.englishSampleSelect.value];
+    el.practiceTextStatus.textContent = "Sample loaded. Start or restart to practice this text again.";
+  });
+  el.practiceTextInput.addEventListener("input", () => {
+    if (currentPracticeType === "custom") saveCustomText(el.practiceTextInput.value);
+    else el.practiceTextStatus.textContent = `${el.practiceTextInput.value.length.toLocaleString()} characters ready.`;
+  });
+  el.practiceFileInput.addEventListener("change", async () => {
+    const file = el.practiceFileInput.files && el.practiceFileInput.files[0];
+    if (!file) return;
+    try {
+      const contents = (await file.text()).replace(/\r\n?/g, "\n");
+      customTextFilename = file.name || "custom.txt";
+      el.practiceTypeSelect.value = "custom";
+      updatePracticeControls();
+      el.practiceTextInput.value = contents;
+      el.practiceTextStatus.textContent = `Loaded ${file.name} · ${contents.length.toLocaleString()} characters.`;
+      saveCustomText(contents);
+      toast(`Loaded ${file.name}`);
+    } catch {
+      toast("Could not read that file as text");
+    }
+    el.practiceFileInput.value = "";
+  });
+
   /* ============ TYPING ENGINE ============ */
   async function startNewTest() {
+    if (currentPracticeType !== "code" && el.practiceTextInput.value.length === 0) {
+      toast("Enter or upload some text before starting");
+      return;
+    }
+
     stopTimer();
     resetLiveStats();
     el.resultsOverlay.classList.add("hidden");
@@ -470,8 +562,14 @@
     if (currentMode === "marathon") snippetCount = 3;
     if (currentMode === "timed") snippetCount = 4;
 
-    el.codeContent.innerHTML = `<span class="loading-msg">Loading snippet…</span>`;
-    const snippets = await fetchSnippets(currentLanguage, currentDifficulty, snippetCount);
+    let snippets;
+    if (currentPracticeType === "code") {
+      el.codeContent.innerHTML = `<span class="loading-msg">Loading snippet…</span>`;
+      snippets = await fetchSnippets(currentLanguage, currentDifficulty, snippetCount);
+    } else {
+      snippets = [el.practiceTextInput.value];
+      currentLanguage = currentPracticeType === "english" ? "English" : "Custom text";
+    }
 
     targetText = snippets.join("\n\n");
     timedModeSecondsLeft = 60;
@@ -487,7 +585,9 @@
     wpmHistory = [];
     elapsedSeconds = 0;
 
-    el.chromeFilename.textContent = `snippet.${FILE_EXT[currentLanguage] || "txt"}`;
+    el.chromeFilename.textContent = currentPracticeType === "code"
+      ? `snippet.${FILE_EXT[currentLanguage] || "txt"}`
+      : currentPracticeType === "english" ? "english-practice.txt" : customTextFilename;
     renderCode();
     updateLiveStatsDisplay(0, 100, 0, 0);
     el.focusOverlay.classList.remove("hidden");
@@ -496,6 +596,7 @@
   function renderCode() {
     const frag = document.createDocumentFragment();
     const lines = targetText.split("\n");
+    charElements = [];
     el.lineNumbers.innerHTML = lines.map((_, i) => `<span>${i + 1}</span>`).join("<br/>");
 
     let container = document.createElement("span");
@@ -509,6 +610,7 @@
         span.dataset.index = globalIndex;
         span.textContent = line[ci];
         container.appendChild(span);
+        charElements.push(span);
         globalIndex++;
       }
       if (li < lines.length - 1) {
@@ -517,6 +619,7 @@
         nlSpan.dataset.index = globalIndex;
         nlSpan.textContent = "\u21B5\n"; // visual return arrow + actual newline
         container.appendChild(nlSpan);
+        charElements.push(nlSpan);
         globalIndex++;
       }
     }
@@ -527,21 +630,28 @@
     applyCharClasses();
   }
 
-  function applyCharClasses() {
-    const spans = el.codeContent.querySelectorAll(".char");
-    spans.forEach((span, i) => {
-      span.classList.remove("correct", "incorrect", "current", "cursor-block", "cursor-line", "cursor-underline", "blink", "smooth");
-      const state = charStates[i];
-      if (state === "correct") span.classList.add("correct");
-      else if (state === "incorrect") span.classList.add("incorrect");
+  function updateCharClass(span, i) {
+    span.classList.remove("correct", "incorrect", "current", "cursor-block", "cursor-line", "cursor-underline", "blink", "smooth");
+    const state = charStates[i];
+    if (state === "correct") span.classList.add("correct");
+    else if (state === "incorrect") span.classList.add("incorrect");
 
-      if (settings.smoothCaret) span.classList.add("smooth");
+    if (settings.smoothCaret) span.classList.add("smooth");
 
-      if (i === cursorIndex) {
-        span.classList.add("current", `cursor-${settings.cursorStyle}`);
-        if (settings.blink) span.classList.add("blink");
-      }
-    });
+    if (i === cursorIndex) {
+      span.classList.add("current", `cursor-${settings.cursorStyle}`);
+      if (settings.blink) span.classList.add("blink");
+    }
+  }
+
+  function applyCharClasses(indices) {
+    if (indices) {
+      indices.forEach((i) => {
+        if (charElements[i]) updateCharClass(charElements[i], i);
+      });
+    } else {
+      for (let i = 0; i < charElements.length; i++) updateCharClass(charElements[i], i);
+    }
     scrollToCursor();
   }
 
@@ -620,7 +730,7 @@
     if (charStates[cursorIndex] === "correct") playKeySound();
 
     cursorIndex++;
-    applyCharClasses();
+    applyCharClasses([cursorIndex - 1, cursorIndex]);
 
     if (cursorIndex >= targetText.length) {
       finishTest();
@@ -631,12 +741,13 @@
     if (cursorIndex <= 0) return;
     cursorIndex--;
     charStates[cursorIndex] = "pending";
-    applyCharClasses();
+    applyCharClasses([cursorIndex, cursorIndex + 1]);
   }
 
   function handleTabAutofill() {
     // auto-fill a contiguous run of spaces at the cursor, like editor indentation
     if (targetText[cursorIndex] !== " ") return false;
+    const startIndex = cursorIndex;
     if (!testActive) {
       testActive = true;
       startTimer();
@@ -646,7 +757,9 @@
       totalKeystrokes++;
       cursorIndex++;
     }
-    applyCharClasses();
+    for (let i = startIndex; i < cursorIndex; i++) updateCharClass(charElements[i], i);
+    if (charElements[cursorIndex]) updateCharClass(charElements[cursorIndex], cursorIndex);
+    scrollToCursor();
     if (cursorIndex >= targetText.length) finishTest();
     return true;
   }
