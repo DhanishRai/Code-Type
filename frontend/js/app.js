@@ -55,9 +55,9 @@
   let currentDifficulty = 1;
   let currentMode = "snippet";
   let currentPracticeType = "code";
-  let customTextFilename = "custom.txt";
 
   let targetText = "";
+  let testRequestId = 0;
   let charStates = []; // 'pending' | 'correct' | 'incorrect'
   let erroredOnce = []; // bool per index, so repeat mistakes at same pos don't double count
   let cursorIndex = 0;
@@ -94,15 +94,8 @@
     difficultyHelp: $("difficulty-help"),
     modeSelect: $("mode-select"),
     practiceTypeSelect: $("practice-type-select"),
-    textSourcePanel: $("text-source-panel"),
-    textSourceTitle: $("text-source-title"),
-    textSourceHelp: $("text-source-help"),
     englishSampleControl: $("english-sample-control"),
     englishSampleSelect: $("english-sample-select"),
-    practiceTextInput: $("practice-text-input"),
-    focusPracticeTextBtn: $("focus-practice-text-btn"),
-    practiceFileInput: $("practice-file-input"),
-    practiceTextStatus: $("practice-text-status"),
     newTestBtn: $("new-test-btn"),
     restartBtn: $("restart-btn"),
 
@@ -460,17 +453,20 @@
   function updateDifficultyBadge(diff) {
     el.difficultyBadge.textContent = DIFF_LABELS[diff];
     el.difficultyBadge.className = `diff-badge diff-${diff}`;
-    const targetOpacity = [0.82, 0.68, 0.55, 0.43, 0.32][diff - 1];
+    const targetOpacity = [0.98, 0.96, 0.94, 0.92, 0.9][diff - 1];
     document.documentElement.style.setProperty("--target-opacity", targetOpacity);
-    el.difficultyHelp.textContent = currentPracticeType === "code"
-      ? "Chooses code complexity; higher levels also make the target fainter."
-      : "Higher levels make the target text fainter. Your text stays unchanged and repeatable.";
+    if (currentPracticeType === "code") {
+      el.difficultyHelp.textContent = "Higher levels select longer, more advanced code snippets.";
+    } else {
+      el.difficultyHelp.textContent = "Higher levels select longer, more challenging English text.";
+    }
   }
 
   el.difficultySlider.addEventListener("input", () => {
     currentDifficulty = parseInt(el.difficultySlider.value, 10);
     updateDifficultyBadge(currentDifficulty);
   });
+  el.difficultySlider.addEventListener("change", startNewTest);
 
   el.languageSelect.addEventListener("change", () => {
     currentLanguage = el.languageSelect.value;
@@ -481,108 +477,72 @@
   });
 
   const ENGLISH_SAMPLES = {
-    sentence: "A curious mind learns something new every day.",
-    paragraph: "Every day offers a small chance to make progress. Read carefully, focus on each word, and keep a steady rhythm. With practice, accuracy becomes natural and confidence grows."
+    sentence: [
+      "The sun warmed the quiet garden.",
+      "A curious mind learns something new every day.",
+      "Although progress may seem gradual, consistent practice strengthens both focus and confidence.",
+      "When challenges appear unexpectedly, a calm approach helps us examine each detail and choose a thoughtful response.",
+      "Reliable progress rarely arrives by accident; it grows from deliberate attention, thoughtful reflection, and the willingness to improve after every attempt."
+    ],
+    paragraph: [
+      "Every day offers a chance to learn. Stay curious, take your time, and keep going.",
+      "Every day offers a small chance to make progress. Read carefully, focus on each word, and keep a steady rhythm. With practice, accuracy becomes natural and confidence grows.",
+      "Learning a new skill takes patience and attention. At first, each step may feel unfamiliar, but regular practice makes difficult tasks easier. Notice what works, learn from mistakes, and celebrate steady improvement.",
+      "A thoughtful reader does more than recognize individual words; they follow how ideas connect, notice subtle changes in tone, and pause when a sentence deserves closer attention. This careful rhythm improves both understanding and accuracy. They compare evidence, question assumptions, and revise conclusions when new information emerges.",
+      "Meaningful progress depends on more than repetition: it requires observation, honest evaluation, and the flexibility to adjust an approach when circumstances change. By balancing persistence with reflection, we turn small discoveries into durable knowledge and communicate our ideas with greater precision. Even when evidence is incomplete or contradictory, careful reasoning helps separate what is known from what is merely assumed, allowing a better decision to emerge."
+    ]
   };
 
-  function getSavedCustomText() {
-    try {
-      return localStorage.getItem("codetype_custom_text_v1") || "";
-    } catch {
-      return "";
-    }
-  }
-
-  function saveCustomText(text) {
-    try {
-      localStorage.setItem("codetype_custom_text_v1", text);
-      el.practiceTextStatus.textContent = `${text.length.toLocaleString()} characters ready. Your custom text is saved in this browser.`;
-    } catch {
-      el.practiceTextStatus.textContent = `${text.length.toLocaleString()} characters ready. Browser storage is full; the text is available until this page is closed.`;
-    }
+  function getEnglishSample() {
+    const samples = ENGLISH_SAMPLES[el.englishSampleSelect.value];
+    return samples[currentDifficulty - 1];
   }
 
   function updatePracticeControls() {
     currentPracticeType = el.practiceTypeSelect.value;
     const isCode = currentPracticeType === "code";
-    const isEnglish = currentPracticeType === "english";
     if (isCode) currentLanguage = el.languageSelect.value;
-    el.restartBtn.textContent = isCode ? "⟲ Restart snippet (Tab)" : "⟲ Repeat this text (Tab)";
+    el.restartBtn.textContent = isCode ? "⟲ Restart snippet (Tab)" : "⟲ Repeat English text (Tab)";
     updateDifficultyBadge(currentDifficulty);
     el.languageControl.classList.toggle("hidden", !isCode);
-    el.textSourcePanel.classList.toggle("hidden", isCode);
-    el.englishSampleControl.classList.toggle("hidden", !isEnglish);
-
-    if (isEnglish) {
-      el.textSourceTitle.textContent = "English typing practice";
-      el.textSourceHelp.textContent = "Choose a sentence or paragraph, or edit the text below. Your selection stays available to repeat.";
-      el.practiceTextInput.value = ENGLISH_SAMPLES[el.englishSampleSelect.value];
-      el.practiceTextStatus.textContent = "Select a sample or enter your own English text, then start or restart to practice it again.";
-    } else if (!isCode) {
-      el.textSourceTitle.textContent = "Your text or code";
-      el.textSourceHelp.textContent = "Paste text or upload a plain-text source file in any programming language. Restart to practice the same content again.";
-      el.practiceTextInput.value = getSavedCustomText();
-      el.practiceTextStatus.textContent = el.practiceTextInput.value
-        ? `${el.practiceTextInput.value.length.toLocaleString()} characters ready. Your custom text is saved in this browser.`
-        : "No length limit is set by the app. Very large files may depend on your browser's available memory.";
-    }
+    el.englishSampleControl.classList.toggle("hidden", isCode);
   }
 
-  el.practiceTypeSelect.addEventListener("change", updatePracticeControls);
-  el.focusPracticeTextBtn.addEventListener("click", () => el.practiceTextInput.focus());
+  el.practiceTypeSelect.addEventListener("change", () => {
+    updatePracticeControls();
+    startNewTest();
+  });
   el.englishSampleSelect.addEventListener("change", () => {
-    el.practiceTextInput.value = ENGLISH_SAMPLES[el.englishSampleSelect.value];
-    el.practiceTextStatus.textContent = "Sample loaded. Start or restart to practice this text again.";
+    if (currentPracticeType === "english") startNewTest();
   });
-  el.practiceTextInput.addEventListener("input", () => {
-    if (currentPracticeType === "custom") saveCustomText(el.practiceTextInput.value);
-    else el.practiceTextStatus.textContent = `${el.practiceTextInput.value.length.toLocaleString()} characters ready.`;
-  });
-  el.practiceFileInput.addEventListener("change", async () => {
-    const file = el.practiceFileInput.files && el.practiceFileInput.files[0];
-    if (!file) return;
-    try {
-      const contents = (await file.text()).replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n");
-      customTextFilename = file.name || "custom.txt";
-      el.practiceTypeSelect.value = "custom";
-      updatePracticeControls();
-      el.practiceTextInput.value = contents;
-      el.practiceTextStatus.textContent = `Loaded ${file.name} · ${contents.length.toLocaleString()} characters. This is now the typing target; restart to practice it again.`;
-      saveCustomText(contents);
-      toast(`Loaded ${file.name}`);
-    } catch {
-      toast("Could not read that file as text");
-    }
-    el.practiceFileInput.value = "";
-  });
-
   /* ============ TYPING ENGINE ============ */
   async function startNewTest() {
-    if (currentPracticeType !== "code" && el.practiceTextInput.value.length === 0) {
-      toast("Enter or upload some text before starting");
-      return;
-    }
+    const requestId = ++testRequestId;
+    const practiceType = currentPracticeType;
+    const language = el.languageSelect.value;
+    const difficulty = currentDifficulty;
+    const mode = currentMode;
 
     stopTimer();
     resetLiveStats();
     el.resultsOverlay.classList.add("hidden");
 
     let snippetCount = 1;
-    if (currentMode === "marathon") snippetCount = 3;
-    if (currentMode === "timed") snippetCount = 4;
+    if (mode === "marathon") snippetCount = 3;
+    if (mode === "timed") snippetCount = 4;
 
     let snippets;
-    if (currentPracticeType === "code") {
+    if (practiceType === "code") {
       el.codeContent.innerHTML = `<span class="loading-msg">Loading snippet…</span>`;
-      snippets = await fetchSnippets(currentLanguage, currentDifficulty, snippetCount);
+      snippets = await fetchSnippets(language, difficulty, snippetCount);
     } else {
-      snippets = [el.practiceTextInput.value];
-      currentLanguage = currentPracticeType === "english" ? "English" : "Custom text";
+      snippets = [getEnglishSample()];
     }
+    if (requestId !== testRequestId) return;
 
     targetText = snippets.join("\n\n");
     timedModeSecondsLeft = 60;
-    marathonSnippetsRemaining = currentMode === "marathon" ? snippets.length : 0;
+    marathonSnippetsRemaining = mode === "marathon" ? snippets.length : 0;
 
     charStates = new Array(targetText.length).fill("pending");
     erroredOnce = new Array(targetText.length).fill(false);
@@ -594,9 +554,10 @@
     wpmHistory = [];
     elapsedSeconds = 0;
 
-    el.chromeFilename.textContent = currentPracticeType === "code"
-      ? `snippet.${FILE_EXT[currentLanguage] || "txt"}`
-      : currentPracticeType === "english" ? "english-practice.txt" : customTextFilename;
+    currentLanguage = practiceType === "code" ? language : "English";
+    el.chromeFilename.textContent = practiceType === "code"
+      ? `snippet.${FILE_EXT[language] || "txt"}`
+      : "english-practice.txt";
     renderCode();
     updateLiveStatsDisplay(0, 100, 0, 0);
     el.focusOverlay.classList.remove("hidden");

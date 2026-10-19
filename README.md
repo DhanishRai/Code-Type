@@ -6,10 +6,9 @@ Choose a language, difficulty, and practice mode. The app shows your typing spee
 
 ## Features
 
-- Practice with five programming languages and five difficulty levels, or choose English typing and custom text.
-- Paste or upload plain-text/code files in any language, then repeat the same text as often as you like.
-- Choose a short English sentence or paragraph, or edit the sample before practicing.
-- Adjust difficulty for all practice types: code difficulty selects snippet complexity, while higher levels make any target text fainter without changing its content.
+- Practice with five programming languages or built-in English typing passages.
+- Choose a short sentence or paragraph for English practice.
+- Increase difficulty to select more advanced code snippets or more challenging English passages.
 - Choose Single Snippet, Timed (60 seconds), or Marathon (three snippets) mode.
 - See your words per minute (WPM), accuracy, elapsed time, and errors.
 - View your personal statistics and recent test history.
@@ -67,16 +66,14 @@ If your backend uses a different address, open **Settings** in the app and chang
 
 ## How to practice
 
-1. Choose **Code snippets**, **English typing**, or **My text or code** in the Practice selector.
-2. For custom practice, paste text or upload a plain-text/code file. For English, select a sentence or paragraph; either text can be edited.
+1. Choose **Code snippets** or **English typing** in the Practice selector.
+2. For English, choose a sentence or paragraph.
 3. Select a practice mode and choose **New Test**.
-4. Adjust **Difficulty** as desired. For pasted/uploaded text and English, higher difficulty fades the target more while keeping the same text.
-5. Click the typing area or start typing the displayed text. Choose **Repeat this text** (or press Tab) to practice the same custom text again.
+4. Adjust **Difficulty** to get more advanced code snippets or more challenging English text.
+5. Click the typing area or start typing the displayed text. Use **Restart** (or press Tab) to practice it again.
 6. Check your speed, accuracy, time, and errors as you type.
 7. When the test ends, review your results. Save the score if the backend is running.
 8. Open **Stats** to view your personal history, or **Leaderboard** for saved scores.
-
-Custom text is kept in browser storage and is not uploaded to the backend. No application-level length limit is imposed; extremely large files may still be limited by available browser memory.
 
 Use **Settings** to change the theme and typing display. The app also includes keyboard shortcuts shown below the typing area.
 

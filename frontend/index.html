@@ -58,7 +58,16 @@
           <select id="practice-type-select">
             <option value="code">💻 Code snippets</option>
             <option value="english">📝 English typing</option>
-            <option value="custom">📂 My text or code</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="english-sample-control" class="control-group hidden">
+        <label class="control-label" for="english-sample-select">English text</label>
+        <div class="select-wrap">
+          <select id="english-sample-select">
+            <option value="sentence">Sentence</option>
+            <option value="paragraph">Paragraph</option>
           </select>
         </div>
       </div>
@@ -102,32 +111,6 @@
       <button id="new-test-btn" class="primary-btn">
         <span class="btn-ico">🔄</span> New Test
       </button>
-    </div>
-
-    <div id="text-source-panel" class="text-source-panel hidden">
-      <div class="text-source-heading">
-        <div>
-          <h2 id="text-source-title">Your practice text</h2>
-          <p id="text-source-help" class="muted-note">Paste or upload plain text or source code. The text stays in your browser.</p>
-        </div>
-        <div id="english-sample-control" class="control-group hidden">
-          <label class="control-label" for="english-sample-select">English sample</label>
-          <div class="select-wrap">
-            <select id="english-sample-select">
-              <option value="sentence">Short sentence</option>
-              <option value="paragraph">Paragraph</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      <label class="control-label" for="practice-text-input">Paste or type your text here</label>
-      <textarea id="practice-text-input" class="practice-text-input" placeholder="Paste a sentence, paragraph, or code in any language…" spellcheck="false"></textarea>
-      <div class="text-source-actions">
-        <button id="focus-practice-text-btn" class="upload-btn" type="button">✍️ Paste or type text</button>
-        <label class="upload-btn" for="practice-file-input">📄 Upload a text or code file</label>
-        <input id="practice-file-input" class="file-input" type="file" />
-        <span id="practice-text-status" class="muted-note">Paste any text above or upload a plain-text/code file. Start or restart to type the same text again.</span>
-      </div>
     </div>
 
     <div class="live-stats">
